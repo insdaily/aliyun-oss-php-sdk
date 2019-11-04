@@ -20,5 +20,15 @@
     "minimum-stability": "stable",
     "autoload": {
         "psr-4": {"OSS\\": "src/OSS"}
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "OSS\\Laravel\\ServiceProvider"
+            ],
+            "aliases": {
+                "OSS": "OSS\\Laravel\\Facade"
+            }
+        }
     }
 }
