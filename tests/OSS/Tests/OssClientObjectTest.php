@@ -603,6 +603,9 @@ class OssClientObjectTest extends TestOssClientBase
             // format and crop!
             $this->ossClient->processObject($this->bucket, $object, 'image/format,png', "test1.png");
             $this->ossClient->processObject($this->bucket, "test1.png", "image/crop,r_400", "test1.png");
+
+            // Yes!
+            $this->ossClient->processObject($this->bucket, $object, "image/crop,r_400/format,png", "test2.png");
         } catch (OssException $e) {
             $this->assertFalse(true);
         }
