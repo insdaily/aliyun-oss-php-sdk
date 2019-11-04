@@ -65,7 +65,7 @@ class OssClient
      *
      * There're a few different ways to create an OssClient object:
      * 1. Most common one from access Id, access Key and the endpoint: $ossClient = new OssClient($id, $key, $endpoint)
-     * 2. If the endpoint is the CName (such as www.testoss.com, make sure it's CName binded in the OSS console), 
+     * 2. If the endpoint is the CName (such as www.testoss.com, make sure it's CName binded in the OSS console),
      *    uses $ossClient = new OssClient($id, $key, $endpoint, true)
      * 3. If using Alicloud's security token service (STS), then the AccessKeyId, AccessKeySecret and STS token are all got from STS.
      * Use this: $ossClient = new OssClient($id, $key, $endpoint, false, $token)
@@ -603,7 +603,7 @@ class OssClient
         $info = $result->getData();
         $info->setName($channelName);
         $info->setDescription($channelConfig->getDescription());
-        
+
         return $info;
     }
 
@@ -615,7 +615,7 @@ class OssClient
      * @param string channelStatus $channelStatus enabled or disabled
      * @param array $options
      * @throws OssException
-     * @return null 
+     * @return null
      */
     public function putLiveChannelStatus($bucket, $channelName, $channelStatus, $options = NULL)
     {
@@ -670,7 +670,7 @@ class OssClient
         $options[self::OSS_OBJECT] = $channelName;
         $options[self::OSS_SUB_RESOURCE] = 'live';
         $options[self::OSS_COMP] = 'stat';
-      
+
         $response = $this->auth($options);
         $result = new GetLiveChannelStatusResult($response);
         return $result->getData();
@@ -698,7 +698,7 @@ class OssClient
         $result = new GetLiveChannelHistoryResult($response);
         return $result->getData();
     }
-  
+
     /**
      *Gets the live channel list under a bucket.
      *
@@ -731,7 +731,7 @@ class OssClient
      * Creates a play list file for the LiveChannel
      *
      * @param string $bucket bucket name
-     * @param string channelName $channelName 
+     * @param string channelName $channelName
      * @param string $playlistName The playlist name, must end with ".m3u8".
      * @param array $setTime  startTime and EndTime in unix time. No more than 1 day.
      * @throws OssException
@@ -746,7 +746,7 @@ class OssClient
         $options[self::OSS_SUB_RESOURCE] = 'vod';
         $options[self::OSS_LIVE_CHANNEL_END_TIME] = $setTime['EndTime'];
         $options[self::OSS_LIVE_CHANNEL_START_TIME] = $setTime['StartTime'];
-       
+
         $response = $this->auth($options);
         $result = new PutSetDeleteResult($response);
         return $result->getData();
@@ -812,8 +812,8 @@ class OssClient
 
     /**
      * Precheck the CORS request. Before sending a CORS request, a preflight request (OPTIONS) is sent with the specific origin.
-     * HTTP METHOD and headers information are sent to OSS as well for evaluating if the CORS request is allowed. 
-     * 
+     * HTTP METHOD and headers information are sent to OSS as well for evaluating if the CORS request is allowed.
+     *
      * Note: OSS could enable the CORS on the bucket by calling putBucketCors. Once CORS is enabled, the OSS could evaluate accordingto the preflight request.
      *
      * @param string $bucket bucket name
@@ -907,7 +907,7 @@ class OssClient
 
     /**
      * Sets a bucket's referer, which has a whitelist of referrer and specifies if empty referer is allowed.
-     * Checks out API document for more details about "Bucket Referer" 
+     * Checks out API document for more details about "Bucket Referer"
      *
      * @param string $bucket bucket name
      * @param RefererConfig $refererConfig
@@ -931,7 +931,7 @@ class OssClient
 
     /**
      * Gets the bucket's Referer
-     * Checks out API document for more details about "Bucket Referer" 
+     * Checks out API document for more details about "Bucket Referer"
      *
      * @param string $bucket bucket name
      * @param array $options
@@ -1086,21 +1086,56 @@ class OssClient
         	$content_md5 = base64_encode(md5($content, true));
         	$options[self::OSS_CONTENT_MD5] = $content_md5;
         }
-        
+
         if (!isset($options[self::OSS_CONTENT_TYPE])) {
             $options[self::OSS_CONTENT_TYPE] = $this->getMimeType($object);
         }
         $response = $this->auth($options);
-        
+
         if (isset($options[self::OSS_CALLBACK]) && !empty($options[self::OSS_CALLBACK])) {
             $result = new CallbackResult($response);
         } else {
             $result = new PutSetDeleteResult($response);
         }
-            
+
         return $result->getData();
     }
 
+   /**
+       * POST方式处理图片，用于数据处理持久化 https://help.aliyun.com/document_detail/55811.html
+       * ```
+       * $object = '20180118152412.jpg';
+       * $style = 'image/watermark,image_bG9nby5wbmc,t_100,g_se'; //例如打水印
+       * $result = $ossCient->processObject($bucket, $object, $style);
+       * ```
+       * @param string $bucket bucket名称
+       * @param string $object objcet名称
+       * @param string $style 要处理的样式
+       * @param string $saveAs 要另存的文件名，不写默认为当前object名
+       * @param array $options
+       * @return null
+       * @throws OssException
+       * @author suyaqi <su@revoke.cc>
+       */
+      public function processObject($bucket, $object, $style, $saveAs = null, $options = null)
+      {
+          $this->precheckCommon($bucket, $object, $options);
+          $options[self::OSS_BUCKET] = $bucket;
+          $options[self::OSS_METHOD] = self::OSS_HTTP_POST;
+          $options[self::OSS_OBJECT] = $object;
+          $options[self::OSS_CONTENT] = "x-oss-process={$style}|sys/saveas,o_" . strtr(base64_encode(($saveAs ?: $object)), '+/', '-_');
+          $options[self::OSS_PROCESS] = $style;
+
+          $response = $this->auth($options);
+
+          if (isset($options[self::OSS_CALLBACK]) && !empty($options[self::OSS_CALLBACK])) {
+              $result = new CallbackResult($response);
+          } else {
+              $result = new PutSetDeleteResult($response);
+          }
+
+          return $result->getData();
+      }
 
     /**
      * creates symlink
@@ -1208,7 +1243,7 @@ class OssClient
         } else {
             $options[self::OSS_CONTENT_LENGTH] = $options[self::OSS_LENGTH];
         }
-        
+
         $is_check_md5 = $this->isCheckMD5($options);
         if ($is_check_md5) {
         	$content_md5 = base64_encode(md5($content, true));
@@ -1975,7 +2010,7 @@ class OssClient
     }
 
     /**
-     * Gets value of the specified key from the options 
+     * Gets value of the specified key from the options
      *
      * @param array $options
      * @param string $key
@@ -2203,7 +2238,7 @@ class OssClient
                 $data = $this->auth($options);
             }
         }
-        
+
         $this->redirects = 0;
         return $data;
     }
@@ -2473,7 +2508,7 @@ class OssClient
 
         foreach($queryStringParams as $params)
         {
-             $queryStringSorted .= $params . '&';    
+             $queryStringSorted .= $params . '&';
         }
 
         $queryStringSorted = substr($queryStringSorted, 0, -1);

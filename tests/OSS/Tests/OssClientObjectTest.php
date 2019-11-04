@@ -100,13 +100,13 @@ class OssClientObjectTest extends TestOssClientBase
         } catch (OssException $e) {
             $this->assertFalse(true);
         }
-        
+
         try {
         	$this->ossClient->putObject($this->bucket, $object, $content, $options);
         } catch (OssException $e) {
         	$this->assertFalse(true);
         }
-  
+
         try {
             $result = $this->ossClient->deleteObjects($this->bucket, "stringtype", $options);
             $this->assertEquals('stringtype', $result[0]);
@@ -236,7 +236,7 @@ class OssClientObjectTest extends TestOssClientBase
             $this->assertFalse(true);
             var_dump($e->getMessage());
 
-        } 
+        }
 
         /**
          * Check if the replication is the same
@@ -326,11 +326,11 @@ class OssClientObjectTest extends TestOssClientBase
         $list = array($object1, $object2);
         try {
             $this->assertTrue($this->ossClient->doesObjectExist($this->bucket, $object2));
-            
+
             $result = $this->ossClient->deleteObjects($this->bucket, $list);
             $this->assertEquals($list[1], $result[0]);
             $this->assertEquals($list[0], $result[1]);
-            
+
             $result = $this->ossClient->deleteObjects($this->bucket, $list, array('quiet' => 'true'));
             $this->assertEquals(array(), $result);
             $this->assertFalse($this->ossClient->doesObjectExist($this->bucket, $object2));
@@ -343,7 +343,7 @@ class OssClientObjectTest extends TestOssClientBase
     {
         $object = "oss-php-sdk-test/append-test-object-name.txt";
         $content_array = array('Hello OSS', 'Hi OSS', 'OSS OK');
-        
+
         /**
          * Append the upload string
          */
@@ -368,7 +368,7 @@ class OssClientObjectTest extends TestOssClientBase
             $this->assertFalse(true);
         }
 
-        
+
         /**
          * Delete test object
          */
@@ -377,7 +377,7 @@ class OssClientObjectTest extends TestOssClientBase
         } catch (OssException $e) {
             $this->assertFalse(true);
         }
-        
+
         /**
          * Append the upload of local files
          */
@@ -399,7 +399,7 @@ class OssClientObjectTest extends TestOssClientBase
         } catch (OssException $e) {
             $this->assertFalse(true);
         }
-        
+
         /**
          * Delete test object
          */
@@ -446,7 +446,7 @@ class OssClientObjectTest extends TestOssClientBase
             $this->assertFalse(true);
         }
     }
-    
+
     public function testPutIllelObject()
     {
     	$object = "/ilegal.txt";
@@ -457,13 +457,13 @@ class OssClientObjectTest extends TestOssClientBase
     		$this->assertEquals('"/ilegal.txt" object name is invalid', $e->getMessage());
     	}
     }
-    
+
     public function testCheckMD5()
     {
     	$object = "oss-php-sdk-test/upload-test-object-name.txt";
     	$content = file_get_contents(__FILE__);
     	$options = array(OssClient::OSS_CHECK_MD5 => true);
-    	
+
     	/**
     	 * Upload data to start MD5
     	 */
@@ -472,7 +472,7 @@ class OssClientObjectTest extends TestOssClientBase
     	} catch (OssException $e) {
     		$this->assertFalse(true);
     	}
-    	
+
     	/**
     	 * Check if the replication is the same
     	 */
@@ -491,7 +491,7 @@ class OssClientObjectTest extends TestOssClientBase
     	} catch (OssException $e) {
     		$this->assertFalse(true);
     	}
-    	
+
     	/**
     	 * Check if the replication is the same
     	 */
@@ -501,7 +501,7 @@ class OssClientObjectTest extends TestOssClientBase
     	} catch (OssException $e) {
     		$this->assertFalse(true);
     	}
-    
+
     	/**
     	 * Delete test object
     	 */
@@ -514,7 +514,7 @@ class OssClientObjectTest extends TestOssClientBase
     	$object = "oss-php-sdk-test/append-test-object-name.txt";
     	$content_array = array('Hello OSS', 'Hi OSS', 'OSS OK');
     	$options = array(OssClient::OSS_CHECK_MD5 => true);
-    	
+
     	/**
     	 * Append the upload string
     	 */
@@ -528,7 +528,7 @@ class OssClientObjectTest extends TestOssClientBase
     	} catch (OssException $e) {
     		$this->assertFalse(true);
     	}
-    	
+
     	/**
     	 * Check if the content is the same
     	 */
@@ -538,7 +538,7 @@ class OssClientObjectTest extends TestOssClientBase
     	} catch (OssException $e) {
     		$this->assertFalse(true);
     	}
-    	
+
     	/**
     	 * Delete test object
     	 */
@@ -547,7 +547,7 @@ class OssClientObjectTest extends TestOssClientBase
     	} catch (OssException $e) {
     		$this->assertFalse(true);
     	}
-    	
+
     	/**
     	 * Append upload of local files
     	 */
@@ -559,7 +559,7 @@ class OssClientObjectTest extends TestOssClientBase
     	} catch (OssException $e) {
     		$this->assertFalse(true);
     	}
-    	
+
     	/**
     	 * Check if the replication is the same
     	 */
@@ -569,7 +569,7 @@ class OssClientObjectTest extends TestOssClientBase
     	} catch (OssException $e) {
     		$this->assertFalse(true);
     	}
-    	
+
     	/**
     	 * delete test object
     	 */
@@ -578,6 +578,34 @@ class OssClientObjectTest extends TestOssClientBase
     	} catch (OssException $e) {
     		$this->assertFalse(true);
     	}
+    }
+
+    public function testProcessObject()
+    {
+        $testImg = __DIR__ . '/test.jpeg';
+        $object = 'test.jpg';
+        $style = 'image/resize,w_400';
+
+        /**
+         * Upload the local file to object
+         */
+        try {
+            $this->ossClient->uploadFile($this->bucket, $object, $testImg);
+        } catch (OssException $e) {
+            $this->assertFalse(true);
+        }
+        /**
+         * Process the object
+         */
+        try {
+            $this->ossClient->processObject($this->bucket, $object, $style);
+
+            // format and crop!
+            $this->ossClient->processObject($this->bucket, $object, 'image/format,png', "test1.png");
+            $this->ossClient->processObject($this->bucket, "test1.png", "image/crop,r_400", "test1.png");
+        } catch (OssException $e) {
+            $this->assertFalse(true);
+        }
     }
 
     public function setUp()

@@ -160,7 +160,7 @@ function uploadFile($ossClient, $bucket)
 }
 
 /**
- * Lists all files and folders in the bucket. 
+ * Lists all files and folders in the bucket.
  * Note if there's more items than the max-keys specified, the caller needs to use the nextMarker returned as the value for the next call's maker paramter.
  * Loop through all the items returned from ListObjects.
  *
@@ -516,3 +516,22 @@ function doesObjectExist($ossClient, $bucket)
     var_dump($exist);
 }
 
+/**
+ * Process the image and save it
+ * @param OssClient $ossClient OssClient instance
+ * @param string $bucket bucket name
+ */
+function processObject($ossClient, $bucket)
+{
+    $testImg = 'test.png';
+    $object = 'test.png';
+    $style = 'image/resize,w_100';
+    try {
+        $ossClient->uploadFile($bucket, $object, $testImg);
+        $ossClient->processObject($bucket, $object, $style);
+    } catch (OssException $e) {
+        printf(__FUNCTION__ . ": FAILED\n");
+        printf($e->getMessage() . "\n");
+        return;
+    }
+}
